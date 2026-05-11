@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>KOATAJ | Calculateur</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Mode Sombre par défaut */
+            --bg: #000000;
+            --surface: #0a0a0a;
+            --border: #2a2a2a;
+            --accent: #ccff00; 
+            --text: #ffffff;
+            --text-sec: #666666;
+            --input-bg: #000000;
+        }
+
+        [data-theme="light"] {
+            /* Mode Clair Tech */
+            --bg: #ffffff;
+            --surface: #f5f5f7;
+            --border: #d2d2d7;
+            --accent: #a3cc00; /* Légèrement ajusté pour la lisibilité sur blanc */
+            --text: #000000;
+            --text-sec: #86868b;
+            --input-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            text-transform: uppercase;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .container { width: 100%; max-width: 400px; margin: 0 auto; padding-bottom: 40px; position: relative; }
+
+        header { 
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            text-align: left; 
+            margin-bottom: 25px; 
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+        
+        .brand { 
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; 
+            letter-spacing: 4px; 
+            color: var(--text-sec); 
+            font-weight: 400; 
+        }
+        
+        h1 { 
+            font-size: 1.8rem; 
+            margin: 5px 0 0 0; 
+            font-weight: 900; 
+            letter-spacing: -1px;
+            color: var(--text);
+        }
+
+        /* Bouton Thème */
+        #theme-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+
+        .section-title { 
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; 
+            font-weight: 700; 
+            color: var(--accent); 
+            margin: 20px 0 10px 0; 
+            letter-spacing: 2px; 
+        }
+
+        .card { 
+            background: var(--surface); 
+            padding: 18px; 
+            margin-bottom: 15px; 
+            border: 1px solid var(--border); 
+            transition: background 0.3s ease;
+        }
+        
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        
+        label { 
+            display: block; 
+            font-size: 0.65rem; 
+            font-weight: 700; 
+            color: var(--text-sec); 
+            margin-bottom: 8px; 
+            letter-spacing: 1px;
+        }
+        
+        .field { position: relative; display: flex; align-items: center; }
+        
+        .field svg { 
+            position: absolute; 
+            left: 12px; 
+            width: 16px; 
+            color: var(--text-sec); 
+            opacity: 0.5; 
+        }
+        
+        input {
+            width: 100%; 
+            padding: 15px 10px 15px 38px; 
+            border: 1px solid var(--border);
+            background: var(--input-bg); 
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem; 
+            font-weight: 700;
+            outline: none; 
+            box-sizing: border-box;
+            border-radius: 0; 
+            transition: all 0.3s ease;
+        }
+        
+        input:focus { border-color: var(--accent); color: var(--accent); }
+
+        button#calc-btn {
+            width: 100%; 
+            padding: 20px; 
+            background: var(--accent); 
+            color: #000000;
+            border: none; 
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem; 
+            font-weight: 900;
+            cursor: pointer; 
+            margin-top: 20px;
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+        }
+        
+        button#calc-btn:active { transform: scale(0.98); opacity: 0.8; }
+
+        .results { margin-top: 30px; display: none; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .res-item { background: var(--bg); border: 1px solid var(--border); padding: 15px; transition: background 0.3s ease; }
+        
+        .res-item.total { 
+            grid-column: span 2; 
+            background: var(--surface); 
+            border: 2px solid var(--accent); 
+            margin-top: 5px; 
+        }
+        
+        .res-label { font-size: 0.55rem; color: var(--text-sec); font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+        .res-label span { color: var(--accent); }
+        .res-val { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 700; color: var(--text); }
+        
+        .res-item.total .res-val { color: var(--accent); font-size: 1.6rem; }
+        .unit { font-size: 0.75rem; font-weight: 400; margin-left: 5px; color: var(--text-sec); }
+    </style>
+</head>
+<body data-theme="dark">
+
+<div class="container">
+    <header>
+        <div>
+            <div class="brand">SYS.KOATAJ.02</div>
+            <h1>CALCULATEUR</h1>
+        </div>
+        <button id="theme-toggle" onclick="toggleTheme()">LIGHT</button>
+    </header>
+
+    <div class="section-title">Dimensions Mur</div>
+    <div class="card">
+        <div class="input-row">
+            <div class="input-group">
+                <label>Largeur (cm)</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h8m-8 10h8m-8-5h8" stroke-width="2"/></svg>
+                    <input type="number" id="wallW" value="300">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Hauteur (cm)</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 8v8m10-8v8m-5-8v8" stroke-width="2"/></svg>
+                    <input type="number" id="wallH" value="362">
+                </div>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Profondeur Max (cm)</label>
+            <div class="field">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 17l5-5-5-5" stroke-width="2"/></svg>
+                <input type="number" id="maxD" value="14">
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Stock Matière (MDF)</div>
+    <div class="card">
+        <div class="input-row">
+            <div class="input-group">
+                <label>Long. (cm)</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" stroke-width="2"/></svg>
+                    <input type="number" id="boardW" value="280">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Larg. (cm)</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" stroke-width="2"/></svg>
+                    <input type="number" id="boardH" value="190">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Paramètres Design</div>
+    <div class="card">
+        <div class="input-row">
+            <div class="input-group">
+                <label>Ép. MDF (mm)</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke-width="2"/></svg>
+                    <input type="number" id="mdfThick" value="12">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Espace (mm)</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01" stroke-width="2"/></svg>
+                    <input type="number" id="spacing" value="20">
+                </div>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Prix Plaque MDF (MAD)</label>
+            <div class="field">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.6 0-3 1.3-3 3s1.3 3 3 3 3 1.3 3 3-1.3 3-3 3" stroke-width="2"/></svg>
+                <input type="number" id="unitPrice" value="450">
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Finition Placage</div>
+    <div class="card">
+        <div class="input-row">
+            <div class="input-group">
+                <label>Essence de Bois</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-width="2"/></svg>
+                    <input type="text" id="woodType" value="Chêne">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Prix (MAD/M²)</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 7h.01M21 3v6a2 2 0 01-.59 1.41l-10 10a2 2 0 01-2.83 0l-6-6a2 2 0 010-2.83l10-10A2 2 0 0115 3h6z" stroke-width="2"/></svg>
+                    <input type="number" id="veneerPrice" value="150">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="calc-btn" onclick="calculate()">Exécuter Calcul</button>
+
+    <div class="results" id="resBox">
+        <div class="res-grid">
+            <div class="res-item"><div class="res-label">Nombre Lattes</div><div class="res-val" id="resLattes">0</div></div>
+            <div class="res-item"><div class="res-label">Planches MDF</div><div class="res-val" id="resPanels">0</div></div>
+            <div class="res-item"><div class="res-label">Surf. Lattes</div><div class="res-val" id="resSurf">0<span class="unit">M²</span></div></div>
+            <div class="res-item"><div class="res-label">Coût MDF</div><div class="res-val" id="resMdfCost">0</div></div>
+            <div class="res-item"><div class="res-label">Surf. Placage (<span id="resWoodName">CHÊNE</span>)</div><div class="res-val" id="resVeneerArea">0<span class="unit">M²</span></div></div>
+            <div class="res-item"><div class="res-label">Coût Placage</div><div class="res-val" id="resVeneerCost">0</div></div>
+            <div class="res-item total"><div class="res-label">Budget Global Estimé</div><div class="res-val" id="resTotal">0 MAD</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('theme-toggle');
+        if (body.getAttribute('data-theme') === 'dark') {
+            body.setAttribute('data-theme', 'light');
+            btn.innerText = 'DARK';
+        } else {
+            body.setAttribute('data-theme', 'dark');
+            btn.innerText = 'LIGHT';
+        }
+    }
+
+    function calculate() {
+        const wallW = parseFloat(document.getElementById('wallW').value);
+        const wallH = parseFloat(document.getElementById('wallH').value) / 100;
+        const maxD = parseFloat(document.getElementById('maxD').value) / 100;
+        const bW = parseFloat(document.getElementById('boardW').value);
+        const bH = parseFloat(document.getElementById('boardH').value);
+        const boardArea = (bW * bH) / 10000; 
+        const mdf = parseFloat(document.getElementById('mdfThick').value);
+        const space = parseFloat(document.getElementById('spacing').value);
+        const priceMdf = parseFloat(document.getElementById('unitPrice').value);
+        const woodType = document.getElementById('woodType').value.toUpperCase();
+        const priceVeneer = parseFloat(document.getElementById('veneerPrice').value);
+
+        const entraxeCm = (mdf + space) / 10;
+        const nbLattes = Math.ceil(wallW / entraxeCm);
+        const surfUneLatte = wallH * maxD;
+        const surfTotaleLattes = nbLattes * surfUneLatte;
+        const nbPlanches = Math.ceil((surfTotaleLattes / boardArea) * 1.15);
+        const totalMdfCost = nbPlanches * priceMdf;
+        const surfPlacage = surfTotaleLattes * 2;
+        const totalVeneerCost = surfPlacage * priceVeneer;
+        const budgetGlobal = totalMdfCost + totalVeneerCost;
+        
+        document.getElementById('resLattes').innerText = nbLattes;
+        document.getElementById('resPanels').innerText = nbPlanches;
+        document.getElementById('resSurf').innerText = surfTotaleLattes.toFixed(2);
+        document.getElementById('resMdfCost').innerText = totalMdfCost.toLocaleString() + " MAD";
+        document.getElementById('resWoodName').innerText = woodType || "BOIS";
+        document.getElementById('resVeneerArea').innerText = surfPlacage.toFixed(2);
+        document.getElementById('resVeneerCost').innerText = Math.ceil(totalVeneerCost).toLocaleString() + " MAD";
+        document.getElementById('resTotal').innerText = Math.ceil(budgetGlobal).toLocaleString() + " MAD";
+        document.getElementById('resBox').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
