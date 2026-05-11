@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>KOATAJ | Poteaux CNC v3.1</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #000000;
+            --surface: #0a0a0a;
+            --border: #2a2a2a;
+            --accent: #ccff00; 
+            --text: #ffffff;
+            --text-sec: #666666;
+            --input-bg: #000000;
+        }
+
+        [data-theme="light"] {
+            --bg: #ffffff;
+            --surface: #f5f5f7;
+            --border: #d2d2d7;
+            --accent: #a3cc00; 
+            --text: #000000;
+            --text-sec: #86868b;
+            --input-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            text-transform: uppercase;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .container { width: 100%; max-width: 400px; margin: 0 auto; padding-bottom: 40px; }
+
+        header { 
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            text-align: left; 
+            margin-bottom: 25px; 
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+        
+        .brand { 
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; 
+            letter-spacing: 4px; 
+            color: var(--text-sec); 
+        }
+        
+        h1 { font-size: 1.8rem; margin: 5px 0 0 0; font-weight: 900; letter-spacing: -1px; }
+
+        #theme-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+
+        .section-title { 
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; 
+            font-weight: 700; 
+            color: var(--accent); 
+            margin: 20px 0 10px 0; 
+            letter-spacing: 2px; 
+        }
+
+        .card { background: var(--surface); padding: 18px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        
+        label { display: block; font-size: 0.65rem; font-weight: 700; color: var(--text-sec); margin-bottom: 8px; letter-spacing: 1px; }
+        .field { position: relative; display: flex; align-items: center; }
+        .field svg { position: absolute; left: 12px; width: 16px; color: var(--text-sec); opacity: 0.5; }
+        
+        input {
+            width: 100%; 
+            padding: 15px 10px 15px 38px; 
+            border: 1px solid var(--border);
+            background: var(--input-bg); 
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem; 
+            font-weight: 700;
+            outline: none; 
+            box-sizing: border-box;
+            border-radius: 0; 
+        }
+        
+        input:focus { border-color: var(--accent); color: var(--accent); }
+
+        button#calc-btn {
+            width: 100%; padding: 20px; background: var(--accent); color: #000000;
+            border: none; font-family: 'Inter', sans-serif; font-size: 1.1rem; 
+            font-weight: 900; cursor: pointer; margin-top: 20px; text-transform: uppercase; letter-spacing: 2px;
+        }
+
+        .results { margin-top: 30px; display: none; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .res-item { background: var(--bg); border: 1px solid var(--border); padding: 15px; }
+        .res-item.total { grid-column: span 2; background: var(--surface); border: 2px solid var(--accent); margin-top: 5px; }
+        .res-label { font-size: 0.55rem; color: var(--text-sec); font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+        .res-val { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 700; color: var(--text); }
+        .unit { font-size: 0.75rem; font-weight: 400; margin-left: 5px; color: var(--text-sec); }
+    </style>
+</head>
+<body data-theme="dark">
+
+<div class="container">
+    <header>
+        <div>
+            <div class="brand">SYS.KOATAJ.03.1</div>
+            <h1>POTEAUX CNC</h1>
+        </div>
+        <button id="theme-toggle" onclick="toggleTheme()">LIGHT</button>
+    </header>
+
+    <div class="section-title">Configuration Poteaux</div>
+    <div class="card">
+        <div class="input-row">
+            <div class="input-group">
+                <label>Nombre poteaux</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857" stroke-width="2"/></svg>
+                    <input type="number" id="nbPoteaux" value="10">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Ép. MDF (mm)</label>
+                <div class="field">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16" stroke-width="2"/></svg>
+                    <input type="number" id="mdfThick" value="18">
+                </div>
+            </div>
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Hauteur (cm)</label>
+                <div class="field">
+                    <input type="number" id="potH" value="300">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Largeur (cm)</label>
+                <div class="field">
+                    <input type="number" id="potW" value="50">
+                </div>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Longueur/Prof. (cm)</label>
+            <div class="field">
+                <input type="number" id="potL" value="60.5">
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Stock MDF</div>
+    <div class="card">
+        <div class="input-row">
+            <div class="input-group"><label>Long. (cm)</label><input type="number" id="boardW" value="366"></div>
+            <div class="input-group"><label>Larg. (cm)</label><input type="number" id="boardH" value="210"></div>
+        </div>
+        <div class="input-group">
+            <label>Prix Plaque (MAD)</label>
+            <input type="number" id="unitPriceMdf" value="650">
+        </div>
+    </div>
+
+    <div class="section-title">Finition Placage</div>
+    <div class="card">
+        <div class="input-group" style="margin-bottom:15px">
+            <label>Essence de Bois</label>
+            <input type="text" id="woodType" value="Chêne">
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Larg. Bande (cm)</label>
+                <input type="number" id="stripWidth" value="30">
+            </div>
+            <div class="input-group">
+                <label>Prix ML (MAD)</label>
+                <input type="number" id="linearPrice" value="45">
+            </div>
+        </div>
+    </div>
+
+    <button id="calc-btn" onclick="calculate()">Calculer Volume</button>
+
+    <div class="results" id="resBox">
+        <div class="res-grid">
+            <div class="res-item"><div class="res-label">Surf. Totale</div><div class="res-val" id="resSurfTot">0<span class="unit">M²</span></div></div>
+            <div class="res-item"><div class="res-label">Plaques MDF</div><div class="res-val" id="resPanels">0</div></div>
+            <div class="res-item"><div class="res-label">Coût MDF</div><div class="res-val" id="resMdfCost">0</div></div>
+            <div class="res-item"><div class="res-label">Coût Placage</div><div class="res-val" id="resVeneerCost">0</div></div>
+            <div class="res-item total"><div class="res-label">Budget Estimé (<span id="resWoodName"></span>)</div><div class="res-val" id="resTotal">0 MAD</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('theme-toggle');
+        if (body.getAttribute('data-theme') === 'dark') {
+            body.setAttribute('data-theme', 'light');
+            btn.innerText = 'DARK';
+        } else {
+            body.setAttribute('data-theme', 'dark');
+            btn.innerText = 'LIGHT';
+        }
+    }
+
+    function calculate() {
+        const n = parseFloat(document.getElementById('nbPoteaux').value);
+        const h = parseFloat(document.getElementById('potH').value) / 100;
+        const w = parseFloat(document.getElementById('potW').value) / 100;
+        const l = parseFloat(document.getElementById('potL').value) / 100;
+        
+        const bW = parseFloat(document.getElementById('boardW').value) / 100;
+        const bH = parseFloat(document.getElementById('boardH').value) / 100;
+        const boardArea = bW * bH;
+        const priceMdf = parseFloat(document.getElementById('unitPriceMdf').value);
+        
+        const woodType = document.getElementById('woodType').value.toUpperCase();
+        const stripW = parseFloat(document.getElementById('stripWidth').value) / 100; // cm to m
+        const priceLin = parseFloat(document.getElementById('linearPrice').value);
+
+        // Conversion Prix ML -> Prix M2
+        const priceVeneerM2 = priceLin / stripW;
+
+        const surfUnPoteau = (2 * (w * h)) + (2 * (l * h));
+        const surfTotale = surfUnPoteau * n;
+
+        const nbPlanches = Math.ceil((surfTotale / boardArea) * 1.15);
+        const totalMdfCost = nbPlanches * priceMdf;
+        const totalVeneerCost = surfTotale * priceVeneerM2;
+
+        document.getElementById('resSurfTot').innerText = surfTotale.toFixed(2);
+        document.getElementById('resPanels').innerText = nbPlanches;
+        document.getElementById('resMdfCost').innerText = totalMdfCost.toLocaleString() + " MAD";
+        document.getElementById('resWoodName').innerText = woodType || "BOIS";
+        document.getElementById('resVeneerCost').innerText = Math.ceil(totalVeneerCost).toLocaleString() + " MAD";
+        document.getElementById('resTotal').innerText = Math.ceil(totalMdfCost + totalVeneerCost).toLocaleString() + " MAD";
+        
+        document.getElementById('resBox').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
